@@ -46,3 +46,6 @@ def objective_rf(trial):
         scoring_list.append(rmse)
         
     return np.mean(scoring_list)
+
+study = optuna.create_study()
+study.optimize(objective_rf, n_trials=2, n_jobs=-1)
