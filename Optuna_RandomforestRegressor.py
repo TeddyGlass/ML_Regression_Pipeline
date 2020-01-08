@@ -3,7 +3,7 @@ from sklearn.model_selection import KFold, cross_val_score
 from sklearn.ensemble import RandomForestRegressor
 import optuna
 
-def objective_rf(trial):
+def obj_rf(trial):
     # parameter space
     max_depth=trial.suggest_int('max_depth', 100, 5000)
     max_features=trial.suggest_int('max_features', 10, X_train.shape[1])
@@ -17,7 +17,7 @@ def objective_rf(trial):
     n_estimators=trial.suggest_int('n_estimators', 100, 2000)
     # cross validation
     scoring_list = []
-    for train_index, valid_index in KFold(n_splits=2).split(X_train, y_train):
+    for train_index, valid_index in KFold(n_splits=5, random_state=0).split(X_train, y_train):
         # model training
         model = RandomForestRegressor(bootstrap=True,
                                       ccp_alpha=0.0,
@@ -48,4 +48,4 @@ def objective_rf(trial):
     return np.mean(scoring_list)
 
 study = optuna.create_study()
-study.optimize(objective_rf, n_trials=2, n_jobs=-1)
+study.optimize(obj_rf, n_trials=2, n_jobs=-1)
