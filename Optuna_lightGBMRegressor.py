@@ -48,7 +48,7 @@ def obj_lgb(trial):
     )
     # cross validation
     scoring_list = []
-    for train_index, valid_index in KFold(n_splits=3).split(X_train, y_train):
+    for train_index, valid_index in KFold(n_splits=5, random_state=0).split(X_train, y_train):
         model.fit(
             X_train[train_index],
             y_train[train_index],
