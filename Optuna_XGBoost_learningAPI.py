@@ -13,14 +13,21 @@ y = boston['target']
 # data split
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1217, test_size=0.2)
 
-# XGboost train
-def train_xgb (dtrain, dvalid,
-               max_depth, gamma, min_child_weight,
-               subsample, colsample_bytree, colsample_bylevel, colsample_bynode,
-               reg_alpha, reg_lambda,
-               scale_pos_weight,
-               base_score
-              ):
+# Objective function
+def obj_xgb(trial):
+    # parameter space
+    max_depth = trial.suggest_int('max_depth', 5,10)
+    gamma = trial.suggest_loguniform('gamma', 1e-5,1e2)
+    min_child_weight = trial.suggest_loguniform('min_child_weight',1e-2,10)
+    subsample = trial.suggest_uniform('subsample', 0.5,1.0)
+    colsample_bytree = trial.suggest_uniform('colsample_bytree', 0.5,1.0)
+    colsample_bylevel = trial.suggest_uniform('colsample_bylevel', 0.5,1.0)
+    colsample_bynode = trial.suggest_uniform('colsample_bynode', 0.5,1.0)
+    reg_alpha = trial.suggest_loguniform('reg_alpha', 1e-5,1e2)
+    reg_lambda = trial.suggest_loguniform('reg_lambda', 1e-5,1e2)
+    scale_pos_weight = trial.suggest_uniform('scale_pos_weight', 0.3,1.0)
+    base_score = trial.suggest_uniform('base_score', 0.0,1.0)
+    # params
     param = {
         'objective': 'reg:squarederror',
         'max_depth': max_depth,
@@ -38,25 +45,26 @@ def train_xgb (dtrain, dvalid,
         'reg_alpha': reg_alpha,
         'reg_lambda': reg_lambda,
         'subsample': subsample
-    }
-    evals = [(dtrain, 'train'), (dvalid, 'valid')]
-    bst = xgb.train(param,
-                    dtrain,
-                    num_boost_round=1000,
-                    early_stopping_rounds=50,
-                    evals=evals,
-                   )
-    return bst
+    }  
+    # train and cross validation
+    scoring_list = []
+    for train_index, valid_index in KFold(n_splits=5, random_state=0).split(X_train, y_train):
+        d_train = xgb.DMatrix(X_train[train_index],label=y_train[train_index])
+        d_valid = xgb.DMatrix(X_train[valid_index],label=y_train[valid_index])
+        evals = [(d_train, 'train'), (d_valid, 'valid')]
+        bst = xgb.train(param,
+                        d_train,
+                        num_boost_round=1000,
+                        early_stopping_rounds=50,
+                        evals=evals
+                       )
+        # final performance evaluation
+        y_true = y_train[valid_index]
+        y_pred = bst.predict(d_valid).round()
+        rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+        scoring_list.append(rmse)
+    return np.mean(scoring_list)
 
-# cross validation and model training
-for train_index, valid_index in KFold(n_splits=2, random_state=0).split(X_train, y_train):
-    dtrain = xgb.DMatrix(X_train[train_index],label=y_train[train_index])
-    dvalid = xgb.DMatrix(X_train[valid_index],label=y_train[valid_index])
-    train_xgb(
-        dtrain=dtrain, dvalid=dvalid,
-        max_depth=3, gamma=1, min_child_weight=0.5,
-        subsample=0.5, colsample_bytree=0.5, colsample_bylevel=0.5, colsample_bynode=0.5,
-        reg_alpha=0, reg_lambda=0,
-        scale_pos_weight=1,
-        base_score=0.5
-    )
+# optimize with optuna
+study = optuna.create_study()
+study.optimize(obj_xgb, n_trials=50, n_jobs=-1)
