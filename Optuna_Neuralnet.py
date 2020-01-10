@@ -36,7 +36,7 @@ def create_model(input_dropout, hidden_dropout, n_layers, batch_norm, units, act
             model.add(PReLU())
         if activation == 'relu':
             model.add(ReLU())
-    model.add(Dropout(hidden_dropout))
+        model.add(Dropout(hidden_dropout))
             
     # output layer
     model.add(Dense(1))
