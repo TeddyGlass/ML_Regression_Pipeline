@@ -34,7 +34,7 @@ def create_model(input_dropout, hidden_dropout, n_layers, batch_norm, units, act
             model.add(BatchNormalization())
         if activation == 'prelu':
             model.add(PReLU())
-        if activation == 'relu':
+        elif activation == 'relu':
             model.add(ReLU())
         model.add(Dropout(hidden_dropout))
             
