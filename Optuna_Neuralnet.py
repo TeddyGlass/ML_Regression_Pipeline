@@ -18,6 +18,7 @@ def boston_data():
     X = boston['data']
     y = boston['target']
     return X, y
+    
 X, y = boston_data()
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1217, test_size=0.1)
 
@@ -33,7 +34,6 @@ class MLP:
         self.batch_size = 32
         self.model=None
         self.scaler = StandardScaler()
-        
         
     def create_graph (self, input_dropout, hidden_dropout, n_layers, batch_norm, units, activation):
         self.model = Sequential()
