@@ -80,6 +80,43 @@ class MLP:
         y_pred = self.model.predict(x).flatten()
         return y_pred
 
+# Objective function
+def obj(trial):
+    # parameter space
+    input_dropout = trial.suggest_uniform('input_dropout', 0, 0.3)
+    hidden_dropout = trial.suggest_uniform('hidden_dropout', 0, 0.3)
+    n_layers = trial.suggest_int('n_layers', 1, 5)
+    units = int(trial.suggest_discrete_uniform('units', 6, 26, 1))
+    batch_norm = trial.suggest_categorical('batch_norm', ['act', 'no'])
+    activation = trial.suggest_categorical('activation', ['prelu', 'relu'])
+    batch_size = int(trial.suggest_discrete_uniform('batch_size', 32, 128, 32))
+    
+    # model building
+    model = MLP()
+    model.create_graph(
+        input_dropout=input_dropout,
+        hidden_dropout=hidden_dropout,
+        n_layers=n_layers,
+        batch_norm=batch_norm,
+        units=units,
+        activation=activation
+    )
+    # training
+    scoring_list = []
+    for train_index, valid_index in KFold(n_splits=5, random_state=0).split(X_train, y_train):
+        model.fit(
+            X_train[train_index], X_train[valid_index],
+            y_train[train_index], y_train[valid_index],
+            batch_size
+        )
+        # prediction
+        y_true = y_train[valid_index]
+        y_pred = model.predict(X_train[valid_index]).flatten()
+        rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+        scoring_list.append(rmse)
+    return np.mean(scoring_list) 
+
+
 def main():
     study = optuna.create_study(sampler=optuna.samplers.TPESampler())
     study.optimize(obj, n_trials=2) # *n_jobsを-1に設定するとエラー出る*
