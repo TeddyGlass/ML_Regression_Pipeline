@@ -5,6 +5,7 @@ from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from catboost import CatBoostRegressor, Pool
 import optuna
 
+from catboost import CatBoostRegressor, Pool
 class CTB:
     
     def cv_scoring(self, model, X_train, y_train, n_splits, random_state):
@@ -24,11 +25,15 @@ class CTB:
             model.fit(
                 ptrain,
                 early_stopping_rounds=50,
-                eval_set=dvalid,
-                use_best_model=True
+                eval_set=pvalid,
+                use_best_model=True,
+                verbose = False
             )
             # evaluation
-            y_pred = model.predict(pvalid)
+            y_pred = model.predict(
+                pvalid,
+                ntree_end=model.get_best_iteration()
+            )
             y_true = y_train[va_cv_idx]
             rmse = np.sqrt(mean_squared_error(y_true, y_pred))
             scoring_list.append(rmse)
@@ -56,9 +61,16 @@ class CTB:
             use_best_model=True
         )
         # prediction
-        pred_va = model.predict(pvalid)
-        pred_te = model.predict(ptest)
+        pred_va = model.predict(
+            pvalid,
+            ntree_end=model.get_best_iteration()
+        )
+        pred_te = model.predict(
+            ptest,
+            ntree_end=model.get_best_iteration()
+        )
         return pred_va, pred_te
+
 
 # params initializer
 params = {
@@ -75,8 +87,8 @@ params = {
 # try
 def obj_ctb(trial):
     space = {
-        'depth':trial.suggest_int('depth', 4,15),
-        'random_strength':trial.suggest_loguniform('random_strength', 0, 3),
+        'depth':trial.suggest_int('depth', 3,10),
+        'random_strength':trial.suggest_int('random_strength', 0, 5),
         'bagging_temperature':trial.suggest_loguniform('bagging_temperature', 0.1, 10)
     }
     params.update(space)
@@ -91,5 +103,6 @@ def obj_ctb(trial):
     )
     return np.mean(score)
 
+# search
 study = optuna.create_study()
 study.optimize(obj_ctb, n_trials=2, n_jobs=-1)
