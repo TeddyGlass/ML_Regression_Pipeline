@@ -66,8 +66,8 @@ study.optimize(obj, n_trials=n_trials, n_jobs=-1)
 # parameter update
 params_lgb.update(study.best_params)
 
-print('RMSE: ', study.best_value)
-print('params: ', params_lgb)
+print('LightGBM_RMSE: ', study.best_value)
+print('LightGBM_params: ', params_lgb)
 
 # save
 with open('../parameter/params_lgb.binaryfile', 'wb') as f:

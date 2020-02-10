@@ -29,7 +29,7 @@ def obj(trial):
     }
     params_xgb.update(space)
     # model
-    model = XGBRegressor(**params)
+    model = XGBRegressor(**params_xgb)
     # CV
     n_splits = params['Regressor']['cv_folds']
     random_state = params['Regressor']['cv_random_state']
@@ -62,8 +62,8 @@ study.optimize(obj, n_trials=n_trials, n_jobs=-1)
 # parameter update
 params_xgb.update(study.best_params)
 
-print('RMSE: ', study.best_value)
-print('params: ', params_xgb)
+print('XGBoost_RMSE: ', study.best_value)
+print('XGBoost_params: ', params_xgb)
 
 # save
 with open('../parameter/params_xgb.binaryfile', 'wb') as f:
