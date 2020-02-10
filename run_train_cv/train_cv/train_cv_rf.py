@@ -27,12 +27,21 @@ va_idxes = []
 va_preds = []
 te_preds = []
 
+rmse_list = []
+r2_list = []
+
 for tr_idx, va_idx in kf.split(X_train, y_train):
     model.fit(X_train[tr_idx], y_train[tr_idx])
     # prediction
     va_pred = model.predict(X_train[va_idx])
     te_pred = model.predict(X_test)
+    # evaluation
+    va_true = y_train[va_idx]
+    rmse = np.sqrt(mean_squared_error(va_true, va_pred))
+    r2 = r2_score(va_true, va_pred)
     # append
+    rmse_list.append(rmse)
+    r2_list.append(r2)
     va_idxes.append(va_idx)
     va_preds.append(va_pred)
     te_preds.append(te_pred)

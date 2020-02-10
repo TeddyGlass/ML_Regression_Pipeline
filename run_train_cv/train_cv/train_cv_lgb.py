@@ -28,6 +28,9 @@ va_idxes = []
 va_preds = []
 te_preds = []
 
+rmse_list = []
+r2_list = []
+
 for tr_idx, va_idx in kf.split(X_train, y_train):
     # training
     eval_set = (X_train[va_idx], y_train[va_idx])
@@ -42,7 +45,13 @@ for tr_idx, va_idx in kf.split(X_train, y_train):
     # prediction
     va_pred = model.predict(X_train[va_idx])
     te_pred = model.predict(X_test)
+    # evaluation
+    va_true = y_train[va_idx]
+    rmse = np.sqrt(mean_squared_error(va_true, va_pred))
+    r2 = r2_score(va_true, va_pred)
     # append
+    rmse_list.append(rmse)
+    r2_list.append(r2)
     va_idxes.append(va_idx)
     va_preds.append(va_pred)
     te_preds.append(te_pred)
@@ -53,11 +62,9 @@ order = np.argsort(valid_index)
 train_preds = np.concatenate(va_preds)[order]
 test_preds = np.mean(te_preds, axis=0)
 
-# R2, RMES, x-yplot
-r2 = r2_score(y_train, train_preds)
-rmse = np.sqrt(mean_squared_error(y_train, train_preds))
-print('LightGBM R2: ', r2)
-print('LightGBM RMSE: ', rmse)
+# R2, RMES
+print('LightGBM R2: ', np.mean(r2_list))
+print('LightGBM RMSE: ', np.mean(rmse_list))
 
 # save predictions
 path = '../prediction/'
