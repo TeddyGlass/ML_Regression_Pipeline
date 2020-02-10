@@ -49,7 +49,7 @@ def obj(trial):
             use_best_model=True,
             verbose=False
         )
-        # evaluation
+        # scoring
         y_pred = model.predict(
             pvalid,
             ntree_end=model.get_best_iteration()

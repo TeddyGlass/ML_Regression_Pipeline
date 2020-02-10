@@ -34,7 +34,8 @@ def params():
                 'random_strength': 1,
                 'bagging_temperature': 1,
                 'grow_policy': 'SymmetricTree',
-                'eval_metric': 'RMSE'
+                'eval_metric': 'RMSE',
+                'random_state': 1112
             },
             'randomforest': {
                 'n_estimators': 300,
@@ -44,7 +45,8 @@ def params():
                 'max_samples': 10,  # ブートストラップ時のサンプリング数
                 'min_impurity_decrease': 1e-2,
                 'min_samples_split': 10,
-                'n_jobs': -1
+                'n_jobs': -1,
+                'random_state': 1112
             }
         }
     }

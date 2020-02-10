@@ -51,7 +51,9 @@ def obj(trial):
             verbose=False
         )
         # scoring
-        y_pred = model.predict(X_train[va_idx])
+        y_pred = model.predict(
+            X_train[va_idx],
+            ntree_limit=model.best_iteration_)
         y_true = y_train[va_idx]
         rmse = np.sqrt(mean_squared_error(y_true, y_pred))
         rmse_list.append(rmse)
