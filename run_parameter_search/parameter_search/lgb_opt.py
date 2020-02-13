@@ -22,8 +22,8 @@ def obj(trial):
         'num_leaves': trial.suggest_int(
             'num_leaves', 0.65*(2**depth), 0.95*(2**depth)),
         'subsample': trial.suggest_uniform('subsample', 0.65, 0.95),
-        'col_sample_bytree': trial.suggest_uniform(
-            'col_sample_bytree', 0.65, 0.95),
+        'colsample_bytree': trial.suggest_uniform(
+            'colsample_bytree', 0.65, 0.95),
         'min_child_weight': trial.suggest_loguniform(
             'min_child_weight', 0.1, 10),
         'min_child_samples': trial.suggest_int(
@@ -61,6 +61,7 @@ def obj(trial):
 
 
 # optuna
+print("optimize_start")
 n_trials = params['Regressor']['optuna_trials']
 study = optuna.create_study()
 study.optimize(obj, n_trials=n_trials, n_jobs=-1)
