@@ -62,7 +62,9 @@ def obj(trial):
 
 # optuna
 n_trials = params['Regressor']['optuna_trials']
-study = optuna.create_study()
+study = optuna.create_study(
+    sampler=optuna.samplers.RandomSampler(seed=123)
+)
 study.optimize(obj, n_trials=n_trials, n_jobs=-1)
 
 # parameter update
