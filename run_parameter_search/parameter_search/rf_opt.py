@@ -24,8 +24,8 @@ def obj(trial):
             'max_samples', 0.65, 0.95),  # ブートストラップ時のサンプリング数
         'min_impurity_decrease': trial.suggest_loguniform(
             'min_impurity_decrease', 1e-4, 1e-2),
-        'min_samples_split': trial.suggest_uniform(
-            'min_samples_split', 1e-4, 1e-2)
+        'min_samples_split': trial.suggest_loguniform(
+            'min_samples_split', 1e-3, 1e-1)
     }
     params_rf.update(space)
     # model
