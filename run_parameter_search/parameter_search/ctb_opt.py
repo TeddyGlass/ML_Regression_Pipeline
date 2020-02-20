@@ -1,7 +1,8 @@
 import pickle
 import numpy as np
+import pandas as pd
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import KFold
+from sklearn.model_selection import StratifiedKFold
 from catboost import CatBoostRegressor, Pool
 import optuna
 from load_data import load_csv
@@ -12,7 +13,14 @@ params = params()
 params_ctb = params['Regressor']['catboost']
 
 # data sets
-X_train, y_train = load_csv()
+X_train, y_train, columns = load_csv()
+print('X_train.shape', X_train.shape)
+print('y_train.shape', y_train.shape)
+print('len(len(columns)', len(columns))
+
+# obj_bin
+labels = np.arange(10)
+y_train_bins = pd.cut(y_train, 10, labels=labels)
 
 
 def obj(trial):
@@ -29,9 +37,9 @@ def obj(trial):
     # CV
     n_splits = params['Regressor']['cv_folds']
     random_state = params['Regressor']['cv_random_state']
-    kf = KFold(n_splits=n_splits, random_state=random_state)
+    kf = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=True)
     rmse_list = []
-    for tr_idx, va_idx in kf.split(X_train, y_train):
+    for tr_idx, va_idx in kf.split(X_train, y_train_bins):
         # Pool
         ptrain = Pool(
             data=X_train[tr_idx],
@@ -44,7 +52,7 @@ def obj(trial):
         # training
         model.fit(
             ptrain,
-            early_stopping_rounds=20,
+            early_stopping_rounds=15,
             eval_set=pvalid,
             use_best_model=True,
             verbose=False

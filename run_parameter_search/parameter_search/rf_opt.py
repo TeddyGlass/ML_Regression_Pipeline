@@ -7,7 +7,6 @@ import optuna
 from load_data import load_csv
 from config import params
 
-print("start")
 # params
 params = params()
 params_rf = params['Regressor']['randomforest']
@@ -47,7 +46,6 @@ def obj(trial):
 
 
 # optuna
-print('Optimize_start')
 n_trials = params['Regressor']['optuna_trials']
 study = optuna.create_study(
     sampler=optuna.samplers.RandomSampler(seed=123)

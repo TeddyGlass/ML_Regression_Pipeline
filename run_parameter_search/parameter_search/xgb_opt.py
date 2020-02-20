@@ -1,7 +1,8 @@
 import pickle
 import numpy as np
+import pandas as pd
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import KFold
+from sklearn.model_selection import StratifiedKFold
 from xgboost import XGBRegressor
 import optuna
 from load_data import load_csv
@@ -12,20 +13,27 @@ params = params()
 params_xgb = params['Regressor']['xgboost']
 
 # data sets
-X_train, y_train = load_csv()
+X_train, y_train, columns = load_csv()
+print('X_train.shape', X_train.shape)
+print('y_train.shape', y_train.shape)
+print('len(len(columns)', len(columns))
+
+# obj_bin
+labels = np.arange(10)
+y_train_bins = pd.cut(y_train, 10, labels=labels)
 
 
 def obj(trial):
     # define space
     space = {
         'subsample': trial.suggest_uniform(
-            'subsample', 0.65, 0.95),
+            'subsample', 0.65, 0.85),
         'colsample_bytree': trial.suggest_uniform(
-            'colsample_bytree', 0.65, 0.95),
+            'colsample_bytree', 0.65, 0.80),
         'gamma': trial.suggest_loguniform(
             'gamma', 1e-8, 1.0),
         'min_child_weight': trial.suggest_loguniform(
-            'min_child_weight', 0.1, 10)
+            'min_child_weight', 1, 32)
     }
     params_xgb.update(space)
     # model
@@ -33,15 +41,15 @@ def obj(trial):
     # CV
     n_splits = params['Regressor']['cv_folds']
     random_state = params['Regressor']['cv_random_state']
-    kf = KFold(n_splits=n_splits, random_state=random_state)
+    kf = StratifiedKFold(n_splits=n_splits, random_state=random_state)
     rmse_list = []
-    for tr_idx, va_idx in kf.split(X_train, y_train):
+    for tr_idx, va_idx in kf.split(X_train, y_train_bins):
         # training
         eval_set = [(X_train[va_idx], y_train[va_idx])]
         model.fit(
             X_train[tr_idx],
             y_train[tr_idx],
-            early_stopping_rounds=20,
+            early_stopping_rounds=15,
             eval_set=eval_set,
             eval_metric='rmse',
             verbose=0
