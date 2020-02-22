@@ -6,7 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 import optuna
 
 # train feature path
@@ -56,9 +56,10 @@ def obj(trial):
         'random_state': 1501
     }
     model = Ridge(**params)
-    kf = StratifiedKFold(n_splits=5, random_state=1641, shuffle=True)
+    # kf = StratifiedKFold(n_splits=5, random_state=1641, shuffle=True)
+    kf = KFold(n_splits=5, random_state=1641, shuffle=True)
     rmse_list = []
-    for tr_idx, va_idx in kf.split(X_train, y_train_bins):
+    for tr_idx, va_idx in kf.split(X_train, y_train):
         model.fit(X_train[tr_idx], y_train[tr_idx])
         y_pred = model.predict(X_train[va_idx])
         y_true = y_train[va_idx]
@@ -76,7 +77,8 @@ with open('{}params_stk.binaryfile'.format(path), 'wb') as f:
 
 # CV
 model = Ridge(**study.best_params, random_state=0)
-kf = StratifiedKFold(n_splits=10, random_state=0, shuffle=True)
+# kf = StratifiedKFold(n_splits=10, random_state=0, shuffle=True)
+kf = KFold(n_splits=10, random_state=0, shuffle=True)
 
 va_idxes = []
 va_preds = []
@@ -85,7 +87,7 @@ te_preds = []
 rmse_list = []
 r2_list = []
 
-for tr_idx, va_idx in kf.split(X_train, y_train_bins):
+for tr_idx, va_idx in kf.split(X_train, y_train):
     # train
     model.fit(X_train[tr_idx], y_train[tr_idx])
     # prediction
