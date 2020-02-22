@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 from lightgbm import LGBMRegressor
 import optuna
 from load_data import load_csv
@@ -28,13 +28,13 @@ def obj(trial):
     space = {
         'num_leaves': trial.suggest_int(
             'num_leaves', num_leaves, 2*num_leaves),
-        'subsample': trial.suggest_uniform('subsample', 0.65, 0.80),
+        'subsample': trial.suggest_uniform('subsample', 0.65, 0.85),
         'colsample_bytree': trial.suggest_uniform(
             'colsample_bytree', 0.65, 0.95),
         'min_child_weight': trial.suggest_loguniform(
             'min_child_weight', 0.1, 10),
         'min_child_samples': trial.suggest_int(
-            'min_child_samples', 1, 30),
+            'min_child_samples', 1, X_train.shape[0]//20),
         'min_split_gain': trial.suggest_loguniform(
             'min_split_gain', 1e-5, 1e-2)
                 }
@@ -44,9 +44,10 @@ def obj(trial):
     # CV
     n_splits = params['Regressor']['cv_folds']
     random_state = params['Regressor']['cv_random_state']
-    kf = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=True)
+    # kf = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=True)
+    kf = KFold(n_splits=n_splits, random_state=random_state, shuffle=True)
     rmse_list = []
-    for tr_idx, va_idx in kf.split(X_train, y_train_bins):
+    for tr_idx, va_idx in kf.split(X_train, y_train):
         # training
         eval_set = (X_train[va_idx], y_train[va_idx])
         model.fit(

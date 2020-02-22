@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 from xgboost import XGBRegressor
 import optuna
 from load_data import load_csv
@@ -41,9 +41,10 @@ def obj(trial):
     # CV
     n_splits = params['Regressor']['cv_folds']
     random_state = params['Regressor']['cv_random_state']
-    kf = StratifiedKFold(n_splits=n_splits, random_state=random_state)
+    # kf = StratifiedKFold(n_splits=n_splits, random_state=random_state)
+    kf = KFold(n_splits=n_splits, random_state=random_state, shuffle=True)
     rmse_list = []
-    for tr_idx, va_idx in kf.split(X_train, y_train_bins):
+    for tr_idx, va_idx in kf.split(X_train, y_train):
         # training
         eval_set = [(X_train[va_idx], y_train[va_idx])]
         model.fit(

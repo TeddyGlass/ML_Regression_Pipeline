@@ -6,7 +6,7 @@ def params():
             'optuna_trials': 60,
             'lightgbm': {
                 'learning_rate': 0.1,
-                'n_estimators': 10000,
+                'n_estimators': 100000,
                 'max_depth': -1,
                 'num_leaves': 31,
                 'subsample': 0.65,
@@ -18,7 +18,7 @@ def params():
             },
             'xgboost': {
                 'learning_rate': 0.1,
-                'n_estimators': 10000,
+                'n_estimators': 100000,
                 'max_depth': 9,
                 'subsample': 0.65,
                 'colsample_bytree': 0.65,
@@ -28,7 +28,7 @@ def params():
                 'n_jobs': -1
             },
             'catboost': {
-                'iterations': 10000,
+                'iterations': 100000,
                 'depth': 7,
                 'learning_rate': 0.1,
                 'random_strength': 1,

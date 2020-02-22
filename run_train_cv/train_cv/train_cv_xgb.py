@@ -6,7 +6,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 from xgboost import XGBRegressor
 
 # data sets
@@ -34,8 +34,8 @@ model = XGBRegressor(**params)
 # CV
 n_splits = setting['cv_folds']
 random_state = setting['cv_random_state']
-kf = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=True)
-
+# kf = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=True)
+kf = KFold(n_splits=n_splits, random_state=random_state, shuffle=True)
 va_idxes = []
 va_preds = []
 te_preds = []
@@ -44,9 +44,9 @@ rmse_list = []
 r2_list = []
 model_list = []
 
-for tr_idx, va_idx in kf.split(X_train, y_train_bins):
+for tr_idx, va_idx in kf.split(X_train, y_train):
     # training
-    eval_set = [(X_train[va_idx], y_train[va_idx])]
+    eval_set = [(X_train[tr_idx], y_train[tr_idx]), (X_train[va_idx], y_train[va_idx])]
     model.fit(
         X_train[tr_idx],
         y_train[tr_idx],
@@ -100,6 +100,25 @@ plt.scatter(y_train, train_preds, color=palette[0])
 plt.scatter(y_test, test_preds, color=palette[1])
 plt.grid()
 plt.show()
+
+# learning analysis
+# learning cureve plot
+def show_learning_curve(train_rmse, valid_rmse):
+    palette = sns.diverging_palette(220, 20, n=2)
+    width = np.arange(train_rmse.shape[0])
+    plt.figure(figsize=(10,7.32))
+    plt.title('Learning_Curve', fontsize=15)
+    plt.xlabel('Estimators', fontsize=15)
+    plt.ylabel('RMSE', fontsize=15)
+    plt.plot(width, train_rmse, label='train_ramse', color=palette[0])
+    plt.plot(width, valid_rmse, label='valid_rmse', color=palette[1])
+    plt.legend(loc='upper right', fontsize=13)
+    plt.show()
+# learning corve
+for model in model_list:
+    train_rmse = np.array(model.evals_result_['validation_0']['rmse'])
+    valid_rmse = np.array(model.evals_result_['validation_1']['rmse'])
+    show_learning_curve(train_rmse, valid_rmse)
 
 # save predictions
 path = '../prediction/'

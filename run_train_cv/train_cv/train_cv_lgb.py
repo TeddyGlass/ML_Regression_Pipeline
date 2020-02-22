@@ -6,7 +6,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 from lightgbm import LGBMRegressor
 
 # data sets
@@ -37,8 +37,8 @@ model = LGBMRegressor(**params)
 # CV
 n_splits = setting['cv_folds']
 random_state = setting['cv_random_state']
-kf = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=True)
-
+# kf = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=True)
+kf = KFold(n_splits=n_splits, random_state=random_state, shuffle=True)
 va_idxes = []
 va_preds = []
 te_preds = []
@@ -47,9 +47,12 @@ rmse_list = []
 r2_list = []
 model_list = []
 
-for tr_idx, va_idx in kf.split(X_train, y_train_bins):
+for tr_idx, va_idx in kf.split(X_train, y_train):
     # training
-    eval_set = (X_train[va_idx], y_train[va_idx])
+    eval_set = [
+        (X_train[tr_idx], y_train[tr_idx]),
+        (X_train[va_idx], y_train[va_idx])
+        ]
     model.fit(
         X_train[tr_idx],
         y_train[tr_idx],
@@ -79,6 +82,13 @@ order = np.argsort(valid_index)
 train_preds = np.concatenate(va_preds)[order]
 test_preds = np.mean(te_preds, axis=0)
 
+# save predictions
+path = '../prediction/'
+with open('{}lgb_train_preds.binaryfile'.format(path), 'wb') as f:
+    pickle.dump(train_preds, f)
+with open('{}lgb_test_preds.binaryfile'.format(path), 'wb') as f:
+    pickle.dump(test_preds, f)
+
 # R2, RMES
 print('LightGBM R2 Val: ', r2_score(y_train, train_preds))
 print('LightGBM RMSE Val: ', np.sqrt(mean_squared_error(y_train, train_preds)))
@@ -104,12 +114,24 @@ plt.scatter(y_test, test_preds, color=palette[1])
 plt.grid()
 plt.show()
 
-# save predictions
-path = '../prediction/'
-with open('{}lgb_train_preds.binaryfile'.format(path), 'wb') as f:
-    pickle.dump(train_preds, f)
-with open('{}lgb_test_preds.binaryfile'.format(path), 'wb') as f:
-    pickle.dump(test_preds, f)
+# learning analysis
+# learning cureve plot
+def show_learning_curve(train_rmse, valid_rmse):
+    palette = sns.diverging_palette(220, 20, n=2)
+    width = np.arange(train_rmse.shape[0])
+    plt.figure(figsize=(10,7.32))
+    plt.title('Learning_Curve', fontsize=15)
+    plt.xlabel('Estimators', fontsize=15)
+    plt.ylabel('RMSE', fontsize=15)
+    plt.plot(width, train_rmse, label='train_ramse', color=palette[0])
+    plt.plot(width, valid_rmse, label='valid_rmse', color=palette[1])
+    plt.legend(loc='upper right', fontsize=13)
+    plt.show()
+# learning corve
+for model in model_list:
+    train_rmse = np.array(model.evals_result_['valid_0']['rmse'])
+    valid_rmse = np.array(model.evals_result_['valid_1']['rmse'])
+    show_learning_curve(train_rmse, valid_rmse)
 
 # importance analysis
 importance_list = [] 
