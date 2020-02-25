@@ -37,8 +37,8 @@ model = LGBMRegressor(**params)
 # CV
 n_splits = setting['cv_folds']
 random_state = setting['cv_random_state']
-# kf = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=True)
-kf = KFold(n_splits=n_splits, random_state=random_state, shuffle=True)
+kf = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=True)
+# kf = KFold(n_splits=n_splits, random_state=random_state, shuffle=True)
 va_idxes = []
 va_preds = []
 te_preds = []
@@ -47,7 +47,7 @@ rmse_list = []
 r2_list = []
 model_list = []
 
-for tr_idx, va_idx in kf.split(X_train, y_train):
+for tr_idx, va_idx in kf.split(X_train, y_train_bins):
     # training
     eval_set = [
         (X_train[tr_idx], y_train[tr_idx]),
@@ -56,14 +56,14 @@ for tr_idx, va_idx in kf.split(X_train, y_train):
     model.fit(
         X_train[tr_idx],
         y_train[tr_idx],
-        early_stopping_rounds=30,
+        early_stopping_rounds=500,
         eval_set=eval_set,
         eval_metric='root_mean_squared_error',
         verbose=False
     )
     # prediction
-    va_pred = model.predict(X_train[va_idx])
-    te_pred = model.predict(X_test)
+    va_pred = model.predict(X_train[va_idx], ntree_limit=model.best_iteration_)
+    te_pred = model.predict(X_test, ntree_limit=model.best_iteration_)
     # evaluation
     va_true = y_train[va_idx]
     rmse = np.sqrt(mean_squared_error(va_true, va_pred))

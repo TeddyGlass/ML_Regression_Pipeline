@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import StratifiedKFold, KFold
+from sklearn.preprocessing import StandardScaler
 import optuna
 
 # train feature path
@@ -31,17 +32,20 @@ for name in test_path:
     test_preds_list.append(test_preds)
 
 # features for Stacking
+scaler = StandardScaler()
 X_train = np.stack(train_preds_list, axis=1)
+X_train = scaler.fit_transform(X_train)
 X_test = np.stack(test_preds_list, axis=1)
+X_test = scaler.fit_transform(X_test)
 
 # load y_train, y_test
 y_train = pd.read_csv('../dataset/y_train.csv')
 y_train = y_train.iloc[:,1]
-y_train_array = np.array(y_train)
+y_train = np.array(y_train)
 
 y_test = pd.read_csv('../dataset/y_test.csv')
 y_test = y_test.iloc[:,1]
-y_test_array = np.array(y_test)
+y_test = np.array(y_test)
 
 # obj_bin
 labels = np.arange(10)
@@ -56,10 +60,10 @@ def obj(trial):
         'random_state': 1501
     }
     model = Ridge(**params)
-    # kf = StratifiedKFold(n_splits=5, random_state=1641, shuffle=True)
-    kf = KFold(n_splits=5, random_state=1641, shuffle=True)
+    kf = StratifiedKFold(n_splits=5, random_state=1641, shuffle=True)
+    # kf = KFold(n_splits=5, random_state=1641, shuffle=True)
     rmse_list = []
-    for tr_idx, va_idx in kf.split(X_train, y_train):
+    for tr_idx, va_idx in kf.split(X_train, y_train_bins):
         model.fit(X_train[tr_idx], y_train[tr_idx])
         y_pred = model.predict(X_train[va_idx])
         y_true = y_train[va_idx]
@@ -77,8 +81,8 @@ with open('{}params_stk.binaryfile'.format(path), 'wb') as f:
 
 # CV
 model = Ridge(**study.best_params, random_state=0)
-# kf = StratifiedKFold(n_splits=10, random_state=0, shuffle=True)
-kf = KFold(n_splits=10, random_state=0, shuffle=True)
+kf = StratifiedKFold(n_splits=10, random_state=0, shuffle=True)
+# kf = KFold(n_splits=10, random_state=0, shuffle=True)
 
 va_idxes = []
 va_preds = []
@@ -87,7 +91,7 @@ te_preds = []
 rmse_list = []
 r2_list = []
 
-for tr_idx, va_idx in kf.split(X_train, y_train):
+for tr_idx, va_idx in kf.split(X_train, y_train_bins):
     # train
     model.fit(X_train[tr_idx], y_train[tr_idx])
     # prediction

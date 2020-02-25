@@ -41,16 +41,16 @@ def obj(trial):
     # CV
     n_splits = params['Regressor']['cv_folds']
     random_state = params['Regressor']['cv_random_state']
-    # kf = StratifiedKFold(n_splits=n_splits, random_state=random_state)
-    kf = KFold(n_splits=n_splits, random_state=random_state, shuffle=True)
+    kf = StratifiedKFold(n_splits=n_splits, random_state=random_state)
+    # kf = KFold(n_splits=n_splits, random_state=random_state, shuffle=True)
     rmse_list = []
-    for tr_idx, va_idx in kf.split(X_train, y_train):
+    for tr_idx, va_idx in kf.split(X_train, y_train_bins):
         # training
         eval_set = [(X_train[va_idx], y_train[va_idx])]
         model.fit(
             X_train[tr_idx],
             y_train[tr_idx],
-            early_stopping_rounds=15,
+            early_stopping_rounds=100,
             eval_set=eval_set,
             eval_metric='rmse',
             verbose=0
