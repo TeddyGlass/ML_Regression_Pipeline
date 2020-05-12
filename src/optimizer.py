@@ -100,3 +100,8 @@ def optuna_search(obj, n_trials, n_jobs, random_state):
         sampler=optuna.samplers.RandomSampler(seed=random_state))
     study.optimize(obj, n_trials=n_trials, n_jobs=n_jobs)
     return study.best_params
+
+
+if __name__ == "__main__":
+    pass
+
