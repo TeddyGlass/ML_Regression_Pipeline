@@ -23,7 +23,6 @@ class Paramset:
         self.model_type = type(self.model).__name__
 
     def generate_params(self):
-        
         if self.model_type == "LGBMRegressor":
             self.PARAMS.update(
                 {
@@ -41,7 +40,6 @@ class Paramset:
                 }
             )
             return self.PARAMS
-
         elif self.model_type == "XGBRegressor":
             self.PARAMS.update(
                 {
@@ -64,13 +62,3 @@ class Paramset:
         elif swich == 'params_search':
             self.PARAMS.update({'learing_rate': 0.05})
             return self.PARAMS
-
-
-def OPTUNA_PARAMS():
-    p = {
-        'random_state': 123,
-        'n_trials': 60,
-        'n_jobs': -1
-    }
-    return p
-

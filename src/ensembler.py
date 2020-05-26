@@ -8,9 +8,9 @@ class Ensembler:
 
     def __init__(self, model):
         self.model = model
-        self.early_stopping_rounds = 1000
-        self.n_splits = 10
+        self.n_splits = 5
         self.random_state = 2031
+        self.early_stopping_rounds = 1000
         self.kf = KFold(
             n_splits=self.n_splits,
             random_state=self.random_state,

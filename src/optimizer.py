@@ -95,6 +95,7 @@ class Objective:
                 RMSE.append(rmse)
             return np.mean(RMSE)
 
+
 def optuna_search(obj, n_trials, n_jobs, random_state):
     study = optuna.create_study(
         sampler=optuna.samplers.RandomSampler(seed=random_state))

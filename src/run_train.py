@@ -1,7 +1,6 @@
 import argparse
 from lightgbm import LGBMRegressor
 from xgboost import XGBRegressor
-from sklearn.model_selection import KFold
 from processor import load_data, load_test
 from ensembler import Ensembler
 from conf import Paramset
@@ -12,11 +11,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('modeltype', help='LGB, XGB, NN etc...')
     args = parser.parse_args()
-
-    # setting train cv parameter
-    n_splits = 5
-    random_state = 2004
-    kf = KFold(n_splits=n_splits, random_state=random_state, shuffle=True)
 
     # path
     ex = '.binaryfile'
