@@ -21,7 +21,7 @@ if __name__ == "__main__":
     if args.modeltype == 'LGB':
         obj = Objective(LGBMRegressor(), x, y)
         OPTIMAL_PARAMAS = optuna_search(obj, 10, -1, 123)
-        # args(obj_func, n-trials, n_jobs, seed)
+        # args(obj_func, n_trials, n_jobs, seed)
         print(OPTIMAL_PARAMAS)
         with open('{}LGB_OPT_PARAMS.binaryfile'.format(path_to_params), 'wb') as f:
             pickle.dump(OPTIMAL_PARAMAS, f)
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     elif args.modeltype == 'XGB':
         obj = Objective(XGBRegressor(), x, y)
         OPTIMAL_PARAMAS = optuna_search(obj, 10, -1, 123)
-        # args(obj_func, n-trials, n_jobs, seed)
+        # args(obj_func, n_trials, n_jobs, seed)
         print(OPTIMAL_PARAMAS)
         with open('{}XGB_OPT_PARAMS.binaryfile'.format(path_to_params), 'wb') as f:
             pickle.dump(OPTIMAL_PARAMAS, f)

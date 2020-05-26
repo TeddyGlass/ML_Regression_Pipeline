@@ -6,11 +6,10 @@ import numpy as np
 
 class Ensembler:
 
-    def __init__(self, model, PARAMS):
-        self.PARAMS = PARAMS
+    def __init__(self, model):
         self.model = model
         self.early_stopping_rounds = 1000
-        self.n_splits = 5
+        self.n_splits = 10
         self.random_state = 2031
         self.kf = KFold(
             n_splits=self.n_splits,
@@ -26,7 +25,7 @@ class Ensembler:
 
     def ensemble(self, x_train, y_train, x_test, y_test):
         for tr_idx, va_idx in self.kf.split(x_train, y_train):
-            self.reg = Trainer(self.model(self.PARAMS))
+            self.reg = Trainer(self.model)
             self.reg.fit(
                 x_train[tr_idx],
                 y_train[tr_idx],
@@ -61,19 +60,23 @@ class Ensembler:
         rmse_mean = np.mean(self.rmse_list)
         rmse_var = np.var(self.rmse_list)
         cv = 100*(rmse_mean/rmse_var)
-        print('each :', self.rmse_list)
-        print('mean :', rmse_mean)
-        print('CV(%) :', cv)
+        print('each_RMSE :', self.rmse_list)
+        print('mean_RMSE :', rmse_mean)
+        print('RMSE CV(%) :', cv)
         return self.rmse_list, rmse_mean, cv
 
     def get_r2(self):
         r2_mean = np.mean(self.r2_list)
         r2_var = np.var(self.r2_list)
         cv = 100*(r2_mean/r2_var)
-        print('each :', self.r2_list)
-        print('mean :', r2_mean)
-        print('CV(%) :', cv)
+        print('each_R2 :', self.r2_list)
+        print('mean_R2 :', r2_mean)
+        print('R2 CV(%) :', cv)
         return self.r2_list, r2_mean, cv
 
     def get_learning_curve(self):
         return self.reg.get_learning_curve()
+
+
+if __name__ == "__main__":
+    pass

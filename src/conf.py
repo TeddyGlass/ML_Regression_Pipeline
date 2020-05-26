@@ -59,7 +59,7 @@ class Paramset:
             
     def swiching_lr(self, swich):
         if swich == 'train':
-            self.PARAMS.update({'learning_rate': 1e-3})
+            self.PARAMS.update({'learning_rate': 1e-7})
             return self.PARAMS
         elif swich == 'params_search':
             self.PARAMS.update({'learing_rate': 0.05})

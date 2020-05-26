@@ -25,8 +25,10 @@ if __name__ == "__main__":
     # load data
     x_train, y_train = load_data()
     x_test, y_test = load_test()
-    print('x_shape :', x_train.shape)
-    print('y_shape :', y_train.shape)
+    print('x_train_shape :', x_train.shape)
+    print('y_train_shape :', y_train.shape)
+    print('x_test_shape :', x_test.shape)
+    print('y_test_shape :', y_test.shape)
 
     # load optimized parameters
     OPT_PARAMS = load(path_to_params)
@@ -43,7 +45,7 @@ if __name__ == "__main__":
         )
         print(LGB_PARAMS)
         # ensemble
-        esm = Ensembler(LGBMRegressor(), LGB_PARAMS)
+        esm = Ensembler(LGBMRegressor(**LGB_PARAMS))
         esm.ensemble(
             x_train,
             y_train,
@@ -68,7 +70,7 @@ if __name__ == "__main__":
         XGB_PARAMS = paramset.generate_params()
         XGB_PARAMS.update(OPT_PARAMS)
         # ensemble
-        esm = Ensembler(XGBRegressor(XGB_PARAMS))
+        esm = Ensembler(XGBRegressor(**XGB_PARAMS))
         esm.ensemble(
             x_train,
             y_train,
